@@ -119,6 +119,8 @@ public class UNOGame {
             if (resource.getCards().size() == 0) {
                 declareMatchWinner(resource);
                 return;
+            }else if(resource.getCards().size()==1){
+                print("Player ",resource.getName(), " said UNO !!!");
             }
             discardPile.addCard(cardPlayed);
             playNextPlayer(cardPlayed, playerIndex);
