@@ -1,6 +1,7 @@
 package com.ideas.uno;
 
 import com.ideas.uno.exception.UNOException;
+import com.ideas.uno.sytem.input.stdin;
 import com.ideas.uno.utility.DeckUtility;
 
 import java.util.*;
@@ -17,23 +18,25 @@ public class UNOGame {
     private boolean isManual;
     private Map<String, Integer> scoreCard;
     private Integer winningPoint;
+    private String winner;
 
-    public UNOGame() {
+    public String getWinner() {
+        return winner;
+    }
+
+    private void setWinner(String winner) {
+        this.winner = winner;
+    }
+
+    public UNOGame() throws UNOException {
         initVariables();
     }
 
-    public static void main(String[] args) {
-        UNOGame myGame = new UNOGame();
-        try {
-            myGame.playGame();
-        } catch (UNOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void playGame() throws UNOException {
+        if(players==null){
+            registerPlayer();
+        }
         Collections.shuffle(deckMain.getDeck());
-        registerPlayer();
         distributeCards();
         // Reshuffling in case first card is wild card
         while (isWildCard(drawPile.getCards().get(drawPile.getCards().size() - 1))) {
@@ -52,23 +55,27 @@ public class UNOGame {
         return card.getCardValue().equals(CardValue.WILD) || card.getCardValue().equals(CardValue.WILD_DRAW_FOUR);
     }
 
+    public Integer getWinningPoint() {
+        return winningPoint;
+    }
+
     private void registerPlayer() throws UNOException {
-        Scanner stdin = new Scanner(System.in);
         print("Winning Point :\n");
-        winningPoint = Integer.parseInt(stdin.nextLine());
+        winningPoint = Integer.parseInt(stdin.getInput());
         print("Enter The number of Player Want to Play :\n");
-        String input = stdin.nextLine();
+        String input = stdin.getInput();
         Integer numberOfPlayer = Integer.parseInt(input);
         if (numberOfPlayer < 11 && numberOfPlayer > 1) {
             String tempName;
             String tempAge;
             for (int i = 0; i < numberOfPlayer; i++) {
                 print("Enter Player " + (i + 1) + " Name:\n");
-                tempName = stdin.nextLine();
+                tempName = stdin.getInput();
                 print("Enter Player " + (i + 1) + " Age:\n");
-                tempAge = stdin.nextLine();
+                tempAge = stdin.getInput();
                 if (Integer.parseInt(tempAge) < 7) {
                     print("Below 7 years Players can not play");
+
                     continue;
                 }
                 players.add(new Resource(tempName, null));
@@ -116,6 +123,9 @@ public class UNOGame {
         if (cardPlayed != null) {
             print(cardPlayed.toString(), " Played by ", resource.getName());
             print("----------------------------------------------");
+            /**
+             * Declaring the match winner based on number of cards
+             */
             if (resource.getCards().size() == 0) {
                 declareMatchWinner(resource);
                 return;
@@ -217,12 +227,37 @@ public class UNOGame {
      *
      * @param resource
      */
-    private void declareMatchWinner(Resource resource) {
+    private void declareMatchWinner(Resource resource) throws UNOException {
         print(resource.getName(), "is winner of the match");
         scoreCard.put(resource.getName(), scoreCard.get(resource.getName()) + totalPointsEarned(players));
+        print("Card Left with other") ;
+        for(Resource res:players){
+            print(res.toString());
+        }
+        print("Current score after this Match is") ;
+        for(String name:scoreCard.keySet()){
+            print(name,"-->",scoreCard.get(name).toString());
+        }
         if (scoreCard.get(resource.getName()) >= winningPoint) {
             declareWinner(resource);
+        }else{
+            reset();
+            deckMain = new DeckMain();
+            playGame();
         }
+    }
+
+    /**
+     * It will empty all the resource ,discard pile and draw pile
+     * should be called only after any match is over
+     */
+    private void reset() {
+        drawPile.removeCard(drawPile.getCards());
+        discardPile.removeCard(discardPile.getCards());
+        for(Resource resource:players){
+            resource.removeCard(resource.getCards());
+        }
+
     }
 
     /**
@@ -232,6 +267,7 @@ public class UNOGame {
      */
     private void declareWinner(Resource resource) {
         print(resource.getName(), " won the game!!! Congratulation");
+        setWinner(resource.getName());
     }
 
     /**
@@ -247,9 +283,6 @@ public class UNOGame {
             indTotal = resource.getWildCard().size() * 50;
             for (Card card : resource.getCards()) {
                 switch (card.getCardValue()) {
-                    case ZERO:
-                        indTotal = indTotal;
-                        break;
                     case ONE:
                         indTotal = indTotal + 1;
                         break;

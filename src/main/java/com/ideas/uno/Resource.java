@@ -103,12 +103,15 @@ public final class Resource {
      * @param cards
      */
     private void addToGroupCards(List<Card> cards) {
-        for (Card card : cards) {
-            if (card.getCardValue().equals(CardValue.WILD) || card.getCardValue().equals(CardValue.WILD_DRAW_FOUR)) {
-                wildCard.add(card);
-            } else {
-                DeckUtility.addToMapOfList(cardValueCardMap, card.getCardValue(), card);
-                DeckUtility.addToMapOfList(colorCardMap, card.getColor(), card);
+        if(cards!=null){
+            for (Card card : cards) {
+                System.out.println(card.toString());
+                if (card.getCardValue().equals(CardValue.WILD) || card.getCardValue().equals(CardValue.WILD_DRAW_FOUR)) {
+                    wildCard.add(card);
+                } else {
+                    DeckUtility.addToMapOfList(cardValueCardMap, card.getCardValue(), card);
+                    DeckUtility.addToMapOfList(colorCardMap, card.getColor(), card);
+                }
             }
         }
     }
